@@ -1,0 +1,67 @@
+trigger:
+  branches:
+    include:
+      - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  node_version: '16'
+  maven_version: '3.8'
+  java_version: '17'
+
+jobs:
+- job: Verify
+  displayName: 'Verify Angular and Spring Boot'
+  steps:
+    - task: Checkout@1
+      displayName: 'Checkout Repository'
+
+    # Setup Node.js using NodeSource (to ensure the correct version is installed)
+    - script: |
+        curl -sL https://deb.nodesource.com/setup_$(node_version).x | sudo -E bash -
+        sudo apt-get install -y nodejs
+      displayName: 'Setup Node.js'
+
+    # Install Angular Dependencies
+    - script: |
+        cd frontend/
+        npm install
+      displayName: 'Install Angular Dependencies'
+
+    # Build Angular Application
+    - script: |
+        cd frontend/
+        npm run build --prod
+      displayName: 'Build Angular Application'
+
+    # Setup Java with the specific version defined in the variables
+    - script: |
+        sudo apt-get update
+        sudo apt-get install -y openjdk-$(java_version)-jdk
+      displayName: 'Setup Java'
+
+    # Install Maven manually (since we have the Maven version defined in variables)
+    - script: |
+        sudo apt-get update
+        sudo apt-get install -y maven
+      displayName: 'Install Maven'
+
+    # Make mvnw Executable
+    - script: |
+        cd backend/
+        chmod +x mvnw
+      displayName: 'Make mvnw Executable'
+
+    # Build Spring Boot Application with Maven
+    - script: |
+        cd backend/
+        ./mvnw clean install -DskipTests
+      displayName: 'Build Spring Boot Application'
+
+    # Run Spring Boot Tests
+    - script: |
+        cd backend/
+        ./mvnw test
+      displayName: 'Run Spring Boot Tests'
