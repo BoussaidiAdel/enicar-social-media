@@ -1,0 +1,54 @@
+trigger:
+  branches:
+    include:
+      - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  node_version: '16'
+  maven_version: '3.8'
+  java_version: '17'
+
+jobs:
+- job: Verify
+  displayName: 'Verify Angular and Spring Boot'
+  steps:
+    - task: Checkout@1
+      displayName: 'Checkout Repository'
+
+    - script: |
+        curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+        sudo apt-get install -y nodejs
+      displayName: 'Setup Node.js'
+
+    - script: |
+        cd frontend/
+        npm install
+      displayName: 'Install Angular Dependencies'
+
+    - script: |
+        cd frontend/
+        npm run build --prod
+      displayName: 'Build Angular Application'
+
+    - script: |
+        sudo apt-get update
+        sudo apt-get install -y openjdk-17-jdk
+      displayName: 'Setup Java'
+
+    - script: |
+        cd backend/
+        chmod +x mvnw
+      displayName: 'Make mvnw Executable'
+
+    - script: |
+        cd backend/
+        ./mvnw clean install -DskipTests
+      displayName: 'Build Spring Boot Application'
+
+    - script: |
+        cd backend/
+        ./mvnw test
+      displayName: 'Run Spring Boot Tests'
