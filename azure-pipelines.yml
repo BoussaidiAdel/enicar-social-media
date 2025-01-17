@@ -1,15 +1,9 @@
+
 trigger:
   branches:
     include:
       - master
 
-pool:
-  vmImage: 'ubuntu-latest'
-
-variables:
-  node_version: '16'
-  maven_version: '3.8'
-  java_version: '17'
 
 jobs:
 - job: Verify
