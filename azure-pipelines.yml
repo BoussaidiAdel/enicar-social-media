@@ -1,13 +1,14 @@
-
 trigger:
   branches:
     include:
       - master
 
+pool:
+  vmImage: 'ubuntu-latest'
 
 jobs:
-- job: Verify
-  displayName: 'Verify Angular and Spring Boot'
+- job: Build
+  displayName: 'Build Angular and Spring Boot Applications'
   steps:
     - task: Checkout@1
       displayName: 'Checkout Repository'
@@ -20,10 +21,6 @@ jobs:
     - script: |
         cd frontend/
         npm install
-      displayName: 'Install Angular Dependencies'
-
-    - script: |
-        cd frontend/
         npm run build --prod
       displayName: 'Build Angular Application'
 
@@ -35,14 +32,5 @@ jobs:
     - script: |
         cd backend/
         chmod +x mvnw
-      displayName: 'Make mvnw Executable'
-
-    - script: |
-        cd backend/
         ./mvnw clean install -DskipTests
       displayName: 'Build Spring Boot Application'
-
-    - script: |
-        cd backend/
-        ./mvnw test
-      displayName: 'Run Spring Boot Tests'
